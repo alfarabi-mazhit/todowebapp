@@ -18,7 +18,6 @@ function createToDoItem() {
   buttonWrapper.append(button);
   form.append(input);
   form.append(buttonWrapper);
-
   return {
     form,
     input,
@@ -33,9 +32,10 @@ function createToDoList() {
 }
 
 let tasks = [];
-if (localStorage.getItem("todo")) {
-  tasks = JSON.parse(localStorage.getItem("todo"));
-}
+// if (localStorage.getItem("todo")) {
+//   tasks = JSON.parse(localStorage.getItem("todo"));
+// }
+
 function draw() {
   let container = document.getElementById("todo-app");
   let title = createAppTitle("Список задач");
@@ -44,29 +44,6 @@ function draw() {
   container.append(title);
   container.append(toDoItem.form);
   container.append(toDoList);
-  if (tasks.length > 0) {
-    for (let i in tasks) {
-      let task = createToDoListItem(tasks[i].value, tasks[i].status);
-      task.doneButton.addEventListener("click", function () {
-        let classItems = [...task.item.classList];
-        if (classItems.includes("list-group-item-success")) {
-          tasks[i].status = "false";
-        } else {
-          tasks[i].status = "true";
-        }
-        task.item.classList.toggle("list-group-item-success");
-        localStorage.setItem("todo", JSON.stringify(tasks));
-      });
-      task.deleteButton.addEventListener("click", function () {
-        if (confirm("Вы уверены?")) {
-          tasks.splice(i, 1);
-          task.item.remove();
-          localStorage.setItem("todo", JSON.stringify(tasks));
-        }
-      });
-      toDoList.append(task.item);
-    }
-  }
   toDoItem.form.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!toDoItem.input.value) {
@@ -96,6 +73,32 @@ function draw() {
     localStorage.setItem("todo", JSON.stringify(tasks));
     toDoItem.input.value = "";
   });
+  (async () => {
+    const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+    const json = await response.json();
+    console.log(json);
+    for (let i in json) {
+      let task = createToDoListItem(json[i].title, json[i].completed);
+      task.doneButton.addEventListener("click", function () {
+        let classItems = [...task.item.classList];
+        // if (classItems.includes("list-group-item-success")) {
+        //   json[i].status = "false";
+        // } else {
+        //   json[i].status = "true";
+        // }
+        task.item.classList.toggle("list-group-item-success");
+        // localStorage.setItem("todo", JSON.stringify(json));
+      });
+      task.deleteButton.addEventListener("click", function () {
+        if (confirm("Вы уверены?")) {
+          tasks.splice(i, 1);
+          task.item.remove();
+          // localStorage.setItem("todo", JSON.stringify(tasks));
+        }
+      });
+      toDoList.append(task.item);
+    }
+  })();
 }
 function createToDoListItem(name, status) {
   let item = document.createElement("li");
@@ -109,8 +112,8 @@ function createToDoListItem(name, status) {
     "justify-content-between",
     "align-items-center"
   );
-  if(status === 'true'){
-    item.classList.add('list-group-item-success')
+  if (status === "true") {
+    item.classList.add("list-group-item-success");
   }
   item.textContent = name;
 
